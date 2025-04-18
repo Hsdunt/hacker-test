@@ -1,0 +1,221 @@
+import { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { motion } from "framer-motion";
+
+const terminalCommands = [
+  "Initializing hack.exe...",
+  "Bypassing firewall...",
+  "Decrypting data...",
+  "Accessing secure files...",
+  "Download started...",
+  "Done. Welcome, agent."
+];
+
+const ctfChallenges = [
+  {
+    id: 1,
+    title: "Find the Flag",
+    description: "Decode this base64 string: ZmxhZ3tjdGZfYmFzZTY0X2ZsYWd9",
+    answer: "flag{ctf_base64_flag}"
+  },
+  {
+    id: 2,
+    title: "Logic Gate",
+    description: "If A = true, B = false, what is A AND NOT B?",
+    answer: "true"
+  },
+  {
+    id: 3,
+    title: "Hex Decode",
+    description: "Decode this hex: 666c61677b6874785f6865787d",
+    answer: "flag{htx_hex}"
+  },
+  {
+    id: 4,
+    title: "Reverse Me",
+    description: "Reverse this string: }galf{em_esu",
+    answer: "flag{use_me}"
+  },
+  {
+    id: 5,
+    title: "Binary Logic",
+    description: "What is 0b1010 + 0b0101 in decimal?",
+    answer: "15"
+  },
+  {
+    id: 6,
+    title: "Caesar Cipher",
+    description: "Decrypt with Caesar shift -3: iodv{fhbihu} ",
+    answer: "flag{cipher}"
+  },
+  {
+    id: 7,
+    title: "Morse Code",
+    description: "Decode: ..-. .-.. .- --. .... / -.-. --- -.. .",
+    answer: "flag code"
+  },
+  {
+    id: 8,
+    title: "Simple Math",
+    description: "(12 * 4) / 3 + 6 = ?",
+    answer: "22"
+  },
+  {
+    id: 9,
+    title: "ROT13",
+    description: "Decode: synt{ebg13_rknzcyr} ",
+    answer: "flag{rot13_example}"
+  },
+  {
+    id: 10,
+    title: "Final Flag",
+    description: "What’s the final answer? Hint: 1337",
+    answer: "flag{ultimate1337}"
+  }
+];
+
+export default function HackerPlayground() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [terminalOutput, setTerminalOutput] = useState([]);
+  const [showChallenges, setShowChallenges] = useState(false);
+  const [userAnswers, setUserAnswers] = useState({});
+  const [results, setResults] = useState({});
+  const [currentLevel, setCurrentLevel] = useState(1);
+  const [score, setScore] = useState(0);
+
+  const handleLogin = () => {
+    if (username === "admin" && password === "root") {
+      setIsLoggedIn(true);
+      simulateTerminal();
+    } else {
+      alert("Access Denied");
+    }
+  };
+
+  const simulateTerminal = () => {
+    let index = 0;
+    const interval = setInterval(() => {
+      setTerminalOutput((prev) => [...prev, terminalCommands[index]]);
+      index++;
+      if (index >= terminalCommands.length) {
+        clearInterval(interval);
+        setTimeout(() => setShowChallenges(true), 1000);
+      }
+    }, 1000);
+  };
+
+  const handleAnswerChange = (id, value) => {
+    setUserAnswers({ ...userAnswers, [id]: value });
+  };
+
+  const checkAnswer = () => {
+    const currentChallenge = ctfChallenges.find((ch) => ch.id === currentLevel);
+    const userAnswer = userAnswers[currentLevel]?.trim().toLowerCase();
+    const isCorrect = userAnswer === currentChallenge.answer.toLowerCase();
+    setResults({ ...results, [currentLevel]: isCorrect });
+    if (isCorrect) {
+      setScore(score + 10);
+      setTimeout(() => {
+        if (currentLevel < ctfChallenges.length) {
+          setCurrentLevel(currentLevel + 1);
+        }
+      }, 1000);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black text-green-400 font-mono p-4">
+      <motion.h1
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 1 }}
+        className="text-5xl text-center mb-10 animate-pulse drop-shadow-[0_0_15px_#22c55e]"
+      >
+        HACKER PLAYGROUND
+      </motion.h1>
+
+      {!isLoggedIn ? (
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="max-w-md mx-auto"
+        >
+          <Card className="bg-gray-900 border border-green-500 shadow-xl">
+            <CardContent className="space-y-4 p-6">
+              <p className="text-sm text-green-300 text-center italic">
+                Ета для развиликателных целей, хакерства ета плоха.
+              </p>
+              <Input
+                placeholder="Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="bg-black text-green-400 border-green-400 focus:ring-green-500"
+              />
+              <Input
+                placeholder="Password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="bg-black text-green-400 border-green-400 focus:ring-green-500"
+              />
+              <Button onClick={handleLogin} className="bg-green-700 hover:bg-green-600 w-full">
+                Enter
+              </Button>
+            </CardContent>
+          </Card>
+        </motion.div>
+      ) : (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1 }}
+          className="max-w-3xl mx-auto mt-10 bg-gray-900 p-6 rounded-xl border border-green-500 shadow-2xl"
+        >
+          <p className="text-2xl mb-4 text-center text-green-300">Access Granted</p>
+          <div className="bg-black p-4 h-60 overflow-y-auto border border-green-400 rounded mb-6 shadow-inner">
+            {terminalOutput.map((line, idx) => (
+              <p key={idx} className="whitespace-pre text-sm">{line}</p>
+            ))}
+          </div>
+
+          {showChallenges && (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl border-b border-green-400 pb-2">Level {currentLevel} / {ctfChallenges.length}</h2>
+                <span className="text-green-300">Score: {score}</span>
+              </div>
+              {(() => {
+                const ch = ctfChallenges.find((c) => c.id === currentLevel);
+                return (
+                  <div className="bg-black p-4 border border-green-400 rounded shadow-md">
+                    <p className="font-bold text-green-300">{ch.title}</p>
+                    <p className="mb-2 text-sm">{ch.description}</p>
+                    <Input
+                      placeholder="Your answer"
+                      value={userAnswers[ch.id] || ""}
+                      onChange={(e) => handleAnswerChange(ch.id, e.target.value)}
+                      className="bg-gray-950 text-green-400 border-green-400"
+                    />
+                    {results[ch.id] !== undefined && (
+                      <p className={results[ch.id] ? "text-green-400 mt-2" : "text-red-500 mt-2"}>
+                        {results[ch.id] ? "✅ Correct! Moving to next level..." : "❌ Incorrect."}
+                      </p>
+                    )}
+                  </div>
+                );
+              })()}
+              <Button onClick={checkAnswer} className="bg-green-700 hover:bg-green-600">
+                Submit Answer
+              </Button>
+            </div>
+          )}
+        </motion.div>
+      )}
+    </div>
+  );
+}
