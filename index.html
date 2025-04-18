@@ -84,8 +84,6 @@ export default function HackerPlayground() {
   const [showChallenges, setShowChallenges] = useState(false);
   const [userAnswers, setUserAnswers] = useState({});
   const [results, setResults] = useState({});
-  const [currentLevel, setCurrentLevel] = useState(1);
-  const [score, setScore] = useState(0);
 
   const handleLogin = () => {
     if (username === "admin" && password === "root") {
@@ -112,23 +110,17 @@ export default function HackerPlayground() {
     setUserAnswers({ ...userAnswers, [id]: value });
   };
 
-  const checkAnswer = () => {
-    const currentChallenge = ctfChallenges.find((ch) => ch.id === currentLevel);
-    const userAnswer = userAnswers[currentLevel]?.trim().toLowerCase();
-    const isCorrect = userAnswer === currentChallenge.answer.toLowerCase();
-    setResults({ ...results, [currentLevel]: isCorrect });
-    if (isCorrect) {
-      setScore(score + 10);
-      setTimeout(() => {
-        if (currentLevel < ctfChallenges.length) {
-          setCurrentLevel(currentLevel + 1);
-        }
-      }, 1000);
-    }
+  const checkAnswers = () => {
+    const res = {};
+    ctfChallenges.forEach((ch) => {
+      res[ch.id] = userAnswers[ch.id]?.trim().toLowerCase() === ch.answer.toLowerCase();
+    });
+    setResults(res);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black text-green-400 font-mono p-4">
+    <div className="min-h-screen bg-black text-green-400 font-mono p-4 relative overflow-hidden">
+      <div className="absolute inset-0 bg-[radial-gradient(#00ff5e33_1px,transparent_1px)] [background-size:16px_16px] opacity-20 pointer-events-none" />
       <motion.h1
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -145,7 +137,7 @@ export default function HackerPlayground() {
           transition={{ duration: 0.8 }}
           className="max-w-md mx-auto"
         >
-          <Card className="bg-gray-900 border border-green-500 shadow-xl">
+          <Card className="bg-black border border-green-500 shadow-[0_0_20px_#22c55e]">
             <CardContent className="space-y-4 p-6">
               <p className="text-sm text-green-300 text-center italic">
                 Ета для развиликателных целей, хакерства ета плоха.
@@ -154,16 +146,16 @@ export default function HackerPlayground() {
                 placeholder="Username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="bg-black text-green-400 border-green-400 focus:ring-green-500"
+                className="bg-black text-green-400 border-green-400 focus:ring-green-500 shadow-[0_0_10px_#22c55e]"
               />
               <Input
                 placeholder="Password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="bg-black text-green-400 border-green-400 focus:ring-green-500"
+                className="bg-black text-green-400 border-green-400 focus:ring-green-500 shadow-[0_0_10px_#22c55e]"
               />
-              <Button onClick={handleLogin} className="bg-green-700 hover:bg-green-600 w-full">
+              <Button onClick={handleLogin} className="bg-green-700 hover:bg-green-600 w-full shadow-[0_0_15px_#22c55e]">
                 Enter
               </Button>
             </CardContent>
@@ -174,43 +166,43 @@ export default function HackerPlayground() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1 }}
-          className="max-w-3xl mx-auto mt-10 bg-gray-900 p-6 rounded-xl border border-green-500 shadow-2xl"
+          className="max-w-4xl mx-auto mt-10 bg-black p-6 rounded-xl border border-green-500 shadow-[0_0_25px_#22c55e]"
         >
           <p className="text-2xl mb-4 text-center text-green-300">Access Granted</p>
-          <div className="bg-black p-4 h-60 overflow-y-auto border border-green-400 rounded mb-6 shadow-inner">
+          <div className="bg-black p-4 h-60 overflow-y-auto border border-green-400 rounded mb-6 shadow-inner animate-pulse">
             {terminalOutput.map((line, idx) => (
-              <p key={idx} className="whitespace-pre text-sm">{line}</p>
+              <p key={idx} className="whitespace-pre text-sm tracking-widest">{line}</p>
             ))}
           </div>
 
           {showChallenges && (
             <div className="space-y-6">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl border-b border-green-400 pb-2">Level {currentLevel} / {ctfChallenges.length}</h2>
-                <span className="text-green-300">Score: {score}</span>
-              </div>
-              {(() => {
-                const ch = ctfChallenges.find((c) => c.id === currentLevel);
-                return (
-                  <div className="bg-black p-4 border border-green-400 rounded shadow-md">
-                    <p className="font-bold text-green-300">{ch.title}</p>
-                    <p className="mb-2 text-sm">{ch.description}</p>
-                    <Input
-                      placeholder="Your answer"
-                      value={userAnswers[ch.id] || ""}
-                      onChange={(e) => handleAnswerChange(ch.id, e.target.value)}
-                      className="bg-gray-950 text-green-400 border-green-400"
-                    />
-                    {results[ch.id] !== undefined && (
-                      <p className={results[ch.id] ? "text-green-400 mt-2" : "text-red-500 mt-2"}>
-                        {results[ch.id] ? "✅ Correct! Moving to next level..." : "❌ Incorrect."}
-                      </p>
-                    )}
-                  </div>
-                );
-              })()}
-              <Button onClick={checkAnswer} className="bg-green-700 hover:bg-green-600">
-                Submit Answer
+              <h2 className="text-xl border-b border-green-400 pb-2">CTF Challenges (10 уровней)</h2>
+              {ctfChallenges.map((ch) => (
+                <motion.div
+                  key={ch.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: ch.id * 0.1 }}
+                  className="bg-black p-4 border border-green-400 rounded shadow-[0_0_10px_#22c55e] hover:shadow-[0_0_20px_#22c55e] transition"
+                >
+                  <p className="font-bold text-green-300">{ch.title}</p>
+                  <p className="mb-2 text-sm">{ch.description}</p>
+                  <Input
+                    placeholder="Your answer"
+                    value={userAnswers[ch.id] || ""}
+                    onChange={(e) => handleAnswerChange(ch.id, e.target.value)}
+                    className="bg-gray-950 text-green-400 border-green-400 shadow-[0_0_5px_#22c55e]"
+                  />
+                  {results[ch.id] !== undefined && (
+                    <p className={results[ch.id] ? "text-green-400 mt-2" : "text-red-500 mt-2 animate-pulse"}>
+                      {results[ch.id] ? "✅ Correct!" : "❌ Incorrect."}
+                    </p>
+                  )}
+                </motion.div>
+              ))}
+              <Button onClick={checkAnswers} className="bg-green-700 hover:bg-green-600 shadow-[0_0_15px_#22c55e]">
+                Submit Answers
               </Button>
             </div>
           )}
